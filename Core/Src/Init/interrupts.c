@@ -6,9 +6,9 @@
  */
 
 
+#include <interrupts.h>
 #include "registers_tools.h"
 #include "registers_defs.h"
-#include "interrupts_init.h"
 
 void interruptsInit(void) {
 	interruptRegisterSetup();

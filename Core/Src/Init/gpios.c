@@ -6,9 +6,9 @@
  */
 
 //#include <stm32f407xx.h>
+#include <gpios.h>
 #include "registers_tools.h"
 #include "registers_defs.h"
-#include "gpios_init.h"
 #include "led_tools.h"
 
 void gpiosInit(void) {

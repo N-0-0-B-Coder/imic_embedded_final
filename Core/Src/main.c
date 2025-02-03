@@ -31,7 +31,7 @@
 #include "registers_tools.h"
 #include "registers_defs.h"
 #include "led_tools.h"
-#include "i2c.h"
+#include "ds3231_tools.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

@@ -6,9 +6,9 @@
  */
 
 
+#include <bus.h>
 #include "registers_tools.h"
 #include "registers_defs.h"
-#include "bus_init.h"
 
 void busInit(void) {
 	busRegisterSetup();

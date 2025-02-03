@@ -5,11 +5,11 @@
  *      Author: daoch
  */
 
+#include <bus.h>
+#include <gpios.h>
 #include <i2c.h>
+#include <interrupts.h>
 #include "user_main_init.h"
-#include "bus_init.h"
-#include "gpios_init.h"
-#include "interrupts_init.h"
 
 
 void userInit(void) {
