@@ -46,6 +46,13 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define PRINT_UART(f_, ...) 													   	   \
+			do {																   	   \
+				char _buffer[1024];													   \
+				snprintf(_buffer, sizeof(_buffer), (f_), ##__VA_ARGS__); 			   \
+				HAL_UART_Transmit(&huart4, (uint8_t *)_buffer, strlen(_buffer), 1000); \
+				osDelay(10);														   \
+			} while (0)
 
 /* USER CODE END PM */
 
@@ -60,6 +67,12 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+static bool extiAlarmPA0 = false;
+static bool extiButtonToggle = false;
+static bool timer6Alarm = false;
+static bool timer6LedToggle = false;
+static bool timer7Alarm = false;
+static bool timer7LedToggle = false;
 
 /* USER CODE END PV */
 
@@ -70,7 +83,11 @@ static void MX_UART4_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-
+void EXTI0_IRQHandler(void);
+void TIM6_DAC_IRQHandler(void);
+void TIM7_IRQHandler(void);
+void UART4_IRQHandler(void);
+void interferenceCheck(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
