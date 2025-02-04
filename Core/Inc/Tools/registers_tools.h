@@ -48,23 +48,23 @@
 #define NOUSED(x) (void)x
 
 uint32_t registerRead(uint32_t *registerAddress);
-
-uint8_t registerRead_uint8(uint8_t *registerAddress);
+uint8_t registerRead_8(uint8_t *registerAddress);
+uint16_t registerRead_16(uint16_t *registerAddress);
 
 void registerWrite(uint32_t *registerAddress, uint32_t value);
-
-void registerWrite_uint8(uint8_t *registerAddress, uint8_t value);
+void registerWrite_8(uint8_t *registerAddress, uint8_t value);
+void registerWrite_16(uint16_t *registerAddress, uint16_t value);
 
 void registerBitSet(uint32_t *registerAddress, uint32_t mask);
-
-void registerBitSet_uint8(uint8_t *registerAddress, uint8_t mask);
+void registerBitSet_8(uint8_t *registerAddress, uint8_t mask);
+void registerBitSet_16(uint16_t *registerAddress, uint16_t mask);
 
 void registerBitClear(uint32_t *registerAddress, uint32_t mask);
-
-void registerBitClear_uint8(uint8_t *registerAddress, uint8_t mask);
+void registerBitClear_8(uint8_t *registerAddress, uint8_t mask);
+void registerBitClear_16(uint16_t *registerAddress, uint16_t mask);
 
 bool registerBitCheck(uint32_t *registerAddress, uint32_t mask);
-
-bool registerBitCheck_uint8(uint8_t *registerAddress, uint8_t mask);
+bool registerBitCheck_8(uint8_t *registerAddress, uint8_t mask);
+bool registerBitCheck_16(uint16_t *registerAddress, uint16_t mask);
 
 #endif /* INC_REGISTERS_TOOLS_H_ */
