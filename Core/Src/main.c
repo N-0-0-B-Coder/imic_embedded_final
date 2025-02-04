@@ -32,6 +32,8 @@
 #include "registers_defs.h"
 #include "led_tools.h"
 #include "ds3231_tools.h"
+#include "button.h"
+#include "rtc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,12 +69,6 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
-static bool extiAlarmPA0 = false;
-static bool extiButtonToggle = false;
-static bool timer6Alarm = false;
-static bool timer6LedToggle = false;
-static bool timer7Alarm = false;
-static bool timer7LedToggle = false;
 
 /* USER CODE END PV */
 
@@ -154,6 +150,9 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+  CreateButtonThread();
+  CreateRTCTimeThread();
+  CreateUARTLedControlThread();
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */

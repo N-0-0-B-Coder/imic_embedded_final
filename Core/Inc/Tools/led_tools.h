@@ -10,6 +10,7 @@
 
 #include "stdint.h"
 #include <stdbool.h>
+#include "registers_tools.h"
 
 #define LED_GREEN 	BIT_12
 #define LED_ORANGE	BIT_13
