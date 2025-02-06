@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <cmsis_os2.h>
 #include "rtc.h"
+#include "uart.h"
 
 void CreateRTCTimeThread(void) {
   // rtcTimeExecute Thread

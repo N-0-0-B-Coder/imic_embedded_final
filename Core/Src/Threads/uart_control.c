@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <cmsis_os2.h>
 #include "uart_control.h"
+#include "uart.h"
 
 void CreateUARTLedControlThread(void) {
   // uartLedControl Thread

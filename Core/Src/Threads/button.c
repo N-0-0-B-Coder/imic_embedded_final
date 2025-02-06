@@ -10,6 +10,8 @@
 #include <cmsis_os2.h>
 #include "button.h"
 #include "led_tools.h"
+#include "registers_defs.h"
+#include "uart.h"
 
 static bool timer6Alarm = false;
 static bool timer6LedToggle = false;
@@ -17,6 +19,35 @@ static bool timer7Alarm = false;
 static bool timer7LedToggle = false;
 static bool extiAlarmPA0 = false;
 static bool extiButtonToggle = false;
+
+void set_timer6Alarm(bool timer6Alarm_in) {
+	timer6Alarm = timer6Alarm_in;
+}
+void set_timer7Alarm(bool timer7Alarm_in) {
+	timer7Alarm = timer7Alarm_in;
+}
+void set_extiAlarmPA0(bool extiAlarmPA0_in) {
+	extiAlarmPA0 = extiAlarmPA0_in;
+}
+
+void interferenceCheck(void) {
+	if (registerBitCheck(REG_GPIO_A_IDR, BIT_0)) {
+		osDelay(100);
+		if (registerBitCheck(REG_GPIO_A_IDR, BIT_0)) {
+			uint32_t count = 8000000; //count value for 1s based on 8Mhz frequency
+			while (registerBitCheck(REG_GPIO_A_IDR, BIT_0) && count >= 0) {
+				count--;
+			}
+			if (count >= 0) {
+				PRINT_UART("Button is pressed\r\n");
+				ledBlink(LED_ORANGE, 500);
+				extiAlarmPA0 = false;
+				extiButtonToggle ^= 1;
+			}
+		}
+	}
+	else extiAlarmPA0 = false;
+}
 
 void CreateButtonThread(void) {
     // buttonHandle Thread
@@ -57,6 +88,7 @@ void ButtonHandleTask(void *argument) {
 		osDelay(1);
 	}
 }
+
 void ButtonExecuteTask(void *argument) {
 	PRINT_UART("Button Execute Thread run\r\n");
 	osDelay(1);

@@ -34,6 +34,8 @@
 #include "ds3231_tools.h"
 #include "button.h"
 #include "rtc.h"
+#include "uart_control.h"
+#include "uart.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,18 +50,18 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define PRINT_UART(f_, ...) 													   	   \
-			do {																   	   \
-				char _buffer[1024];													   \
-				snprintf(_buffer, sizeof(_buffer), (f_), ##__VA_ARGS__); 			   \
-				HAL_UART_Transmit(&huart4, (uint8_t *)_buffer, strlen(_buffer), 1000); \
-				osDelay(10);														   \
-			} while (0)
+//#define PRINT_UART(f_, ...) 													   	   \
+//			do {																   	   \
+//				char _buffer[1024];													   \
+//				snprintf(_buffer, sizeof(_buffer), (f_), ##__VA_ARGS__); 			   \
+//				HAL_UART_Transmit(&huart4, (uint8_t *)_buffer, strlen(_buffer), 1000); \
+//				osDelay(10);														   \
+//			} while (0)
 
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-UART_HandleTypeDef huart4;
+//UART_HandleTypeDef huart4;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -69,13 +71,15 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
-
+bool timer6Alarm = false;
+bool timer7Alarm = false;
+bool extiAlarmPA0 = false;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_UART4_Init(void);
+//static void MX_UART4_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -83,7 +87,6 @@ void EXTI0_IRQHandler(void);
 void TIM6_DAC_IRQHandler(void);
 void TIM7_IRQHandler(void);
 void UART4_IRQHandler(void);
-void interferenceCheck(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -119,10 +122,21 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  MX_GPIO_Init();
+  //MX_GPIO_Init();
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
+  // Set priority and enable NVIC (Nested vectored interrupt controller)
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+  //HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
+  // Enable NVIC for EXTI Group 0
+  NVIC_EnableIRQ(EXTI0_IRQn);
+
+  // Enable NVIC for Timer 6 and 7
+  NVIC_EnableIRQ(TIM6_DAC_IRQn);
+  NVIC_EnableIRQ(TIM7_IRQn);
+
+  userInit();
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -224,33 +238,33 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-static void MX_UART4_Init(void)
-{
-
-  /* USER CODE BEGIN UART4_Init 0 */
-
-  /* USER CODE END UART4_Init 0 */
-
-  /* USER CODE BEGIN UART4_Init 1 */
-
-  /* USER CODE END UART4_Init 1 */
-  huart4.Instance = UART4;
-  huart4.Init.BaudRate = 115200;
-  huart4.Init.WordLength = UART_WORDLENGTH_8B;
-  huart4.Init.StopBits = UART_STOPBITS_1;
-  huart4.Init.Parity = UART_PARITY_NONE;
-  huart4.Init.Mode = UART_MODE_TX_RX;
-  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN UART4_Init 2 */
-
-  /* USER CODE END UART4_Init 2 */
-
-}
+//static void MX_UART4_Init(void)
+//{
+//
+//  /* USER CODE BEGIN UART4_Init 0 */
+//
+//  /* USER CODE END UART4_Init 0 */
+//
+//  /* USER CODE BEGIN UART4_Init 1 */
+//
+//  /* USER CODE END UART4_Init 1 */
+//  huart4.Instance = UART4;
+//  huart4.Init.BaudRate = 115200;
+//  huart4.Init.WordLength = UART_WORDLENGTH_8B;
+//  huart4.Init.StopBits = UART_STOPBITS_1;
+//  huart4.Init.Parity = UART_PARITY_NONE;
+//  huart4.Init.Mode = UART_MODE_TX_RX;
+//  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+//  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+//  if (HAL_UART_Init(&huart4) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
+//  /* USER CODE BEGIN UART4_Init 2 */
+//
+//  /* USER CODE END UART4_Init 2 */
+//
+//}
 
 /**
   * @brief GPIO Initialization Function
@@ -290,7 +304,42 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+// Function for NVIC EXTI0 Interrupt
+void EXTI0_IRQHandler(void) {
+	PRINT_UART("interrupted/r/n");
+	//Check if pending is at PA0
+	if (registerBitCheck(REG_EXTI_PR, BIT_0)) {
+		// Clear the pending at PA0
+		registerBitSet(REG_EXTI_PR, BIT_0);
+		// Set the alarm variable of PA0
+		extiAlarmPA0 = true;
+		set_extiAlarmPA0(extiAlarmPA0);
+	}
+}
 
+// Function for NVIC TIM6 Interrupt
+void TIM6_DAC_IRQHandler(void) {
+	// Check update interrupt flag
+    if (registerBitCheck(REG_TIM6_SR, BIT_0)) {
+    	// Clear update interrupt flag
+        registerBitClear(REG_TIM6_SR, BIT_0);
+        // Set Alarm of TIM 6
+        timer6Alarm = true;
+        set_timer6Alarm(timer6Alarm);
+    }
+}
+
+// Function for NVIC TIM7 Interrupt
+void TIM7_IRQHandler(void) {
+	// Check update interrupt flag
+	if (registerBitCheck(REG_TIM7_SR, BIT_0)) {
+		// Clear update interrupt flag
+		registerBitClear(REG_TIM7_SR, BIT_0);
+		// Set Alarm of TIM 7
+		timer7Alarm = true;
+		set_timer7Alarm(timer7Alarm);
+	}
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
