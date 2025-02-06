@@ -6,15 +6,21 @@
  */
 
 
-#include "cmsis_os.h"
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_uart.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdbool.h>
+#include "cmsis_os.h"
+#include "stm32f4xx_hal.h"
+#include "stm32f4xx_hal_uart.h"
 #include "uart.h"
 
 UART_HandleTypeDef huart4;
+
+uint8_t uartRxBuffer[UART_BUFFER_SIZE];  // Buffer for received string
+uint8_t uartRxIndex = 0;  // Current position in buffer
+uint8_t uartRxData;  // Temporary byte storage
+bool uartCommandReceived = false;  // Flag when a command is ready
 
 void print_uart(const char *format, ...) {
     char _buffer[1024];
@@ -54,4 +60,41 @@ void MX_UART4_Init(void)
 
   /* USER CODE END UART4_Init 2 */
 
+}
+
+void StartUARTReceive_IT() {
+    HAL_UART_Receive_IT(&huart4, &uartRxData, 1);  // Receive one byte at a time
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	if (huart->Instance == UART4) {  // Ensure it's UART4
+		if (uartRxData == '\n' || uartRxData == '\r') {  // End of command
+			uartRxBuffer[uartRxIndex] = '\0';  // Null-terminate the string
+			uartRxIndex = 0;  // Reset buffer index
+			uartCommandReceived = true;  // Set flag to process command
+		} else {
+			uartRxBuffer[uartRxIndex++] = uartRxData;  // Store received char
+			if (uartRxIndex >= UART_BUFFER_SIZE) {  // Prevent buffer overflow
+				uartRxIndex = 0;
+			}
+		}
+		HAL_UART_Receive_IT(&huart4, &uartRxData, 1);  // Restart reception
+	}
+}
+
+bool get_uartCommandReceived(void) {
+	return uartCommandReceived;
+}
+
+void set_uartCommandReceived(bool command) {
+	uartCommandReceived = command;
+}
+
+uint8_t* get_dataBuffer() {
+	return &uartRxBuffer;
+}
+
+void uartInit(void) {
+	MX_UART4_Init();
+	StartUARTReceive_IT();
 }
