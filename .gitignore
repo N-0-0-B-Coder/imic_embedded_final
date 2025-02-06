@@ -1,4 +1,8 @@
-/.Settings
-/.settings
-/Debug
-/debug
+#settings
+.settings/
+
+#Debug
+Debug/
+debug/
+Release/
+release
