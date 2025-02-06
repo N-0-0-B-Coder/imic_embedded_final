@@ -20,5 +20,5 @@ void userInit(void) {
 	interruptsInit();
 	i2cInit();
 	timersInit();
-	MX_UART4_Init();
+	uartInit();
 }

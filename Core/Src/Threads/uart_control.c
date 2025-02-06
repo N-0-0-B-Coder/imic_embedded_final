@@ -10,9 +10,12 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <cmsis_os2.h>
+#include <string.h>
 #include "uart_control.h"
 #include "uart.h"
 
+bool command = false;
+uint8_t* dataBuffer = NULL;
 
 void CreateUARTLedControlThread(void) {
   // uartLedControl Thread
@@ -31,6 +34,24 @@ void startUARTLedControl(void *argument) {
 	PRINT_UART("uartLedControl Thread run \r\n");
 	osDelay(1);
 	for (;;) {
+		command = get_uartCommandReceived();
+		if (command) {
+			command = false;  // Clear flag
+		        set_uartCommandReceived(command);
+		        dataBuffer = get_dataBuffer();
+
+		        PRINT_UART("dataBuffer: %s, string length: %d\r\n", dataBuffer, strlen(dataBuffer));
+
+		        if (strcmp((char*)dataBuffer, "led on") == 0) {
+		            //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);  // Turn LED ON
+		        	PRINT_UART("LED is ON\r\n");
+		        } else if (strcmp((char*)dataBuffer, "led off") == 0) {
+		            //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // Turn LED OFF
+		        	PRINT_UART("LED is OFF\r\n");
+		        } else {
+		        	PRINT_UART("Invalid Command\r\n");
+		        }
+		}
 		osDelay(1);
 	}
 }
