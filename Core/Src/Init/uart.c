@@ -91,7 +91,7 @@ void set_uartCommandReceived(bool command) {
 }
 
 uint8_t* get_dataBuffer() {
-	return &uartRxBuffer;
+	return uartRxBuffer;
 }
 
 void uartInit(void) {

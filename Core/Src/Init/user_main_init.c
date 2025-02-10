@@ -11,7 +11,7 @@
 #include <i2c.h>
 #include <interrupts.h>
 #include <uart.h>
-#include <timers.h>
+#include <timers_init.h>
 #include "user_main_init.h"
 
 void userInit(void) {

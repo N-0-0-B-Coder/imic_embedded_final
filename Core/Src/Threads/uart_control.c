@@ -12,6 +12,7 @@
 #include <cmsis_os2.h>
 #include <string.h>
 #include "uart_control.h"
+#include "button.h"
 #include "uart.h"
 
 bool command = false;
@@ -40,14 +41,16 @@ void startUARTLedControl(void *argument) {
 		        set_uartCommandReceived(command);
 		        dataBuffer = get_dataBuffer();
 
-		        PRINT_UART("dataBuffer: %s, string length: %d\r\n", dataBuffer, strlen(dataBuffer));
+		        PRINT_UART("dataBuffer: %s, string length: %d\r\n", dataBuffer, strlen((char *)dataBuffer));
 
 		        if (strcmp((char*)dataBuffer, "led on") == 0) {
 		            //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_SET);  // Turn LED ON
 		        	PRINT_UART("LED is ON\r\n");
+		        	set_extiToggle(true);
 		        } else if (strcmp((char*)dataBuffer, "led off") == 0) {
 		            //HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0, GPIO_PIN_RESET);  // Turn LED OFF
 		        	PRINT_UART("LED is OFF\r\n");
+		        	set_extiToggle(false);
 		        } else {
 		        	PRINT_UART("Invalid Command\r\n");
 		        }

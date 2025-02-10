@@ -31,6 +31,10 @@ void set_extiAlarmPA0(bool extiAlarmPA0_in) {
 	extiAlarmPA0 = extiAlarmPA0_in;
 }
 
+void set_extiToggle(bool extiButtonToggle_in) {
+	extiButtonToggle = extiButtonToggle_in;
+}
+
 void interferenceCheck(void) {
 	if (registerBitCheck(REG_GPIO_A_IDR, BIT_0)) {
 		osDelay(100);
