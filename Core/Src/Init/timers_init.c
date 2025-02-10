@@ -1,12 +1,12 @@
 /*
- * timers.c
+ * timers_init.c
  *
- *  Created on: Feb 6, 2025
+ *  Created on: Feb 10, 2025
  *      Author: daoch
  */
 
 
-#include "timers.h"
+#include "timers_init.h"
 #include "registers_tools.h"
 #include "registers_defs.h"
 
